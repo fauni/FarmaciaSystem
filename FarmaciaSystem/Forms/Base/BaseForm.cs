@@ -14,25 +14,16 @@ namespace FarmaciaSystem.Forms.Base
         public BaseForm()
         {
             InitializeComponent();
-            ConfigureForm();
+            ConfigureBaseForm();
         }
 
-        private void InitializeComponent()
+        private void ConfigureBaseForm()
         {
-            this.SuspendLayout();
-
             // Configuración básica del formulario
-            this.AutoScaleDimensions = new SizeF(6F, 13F);
-            this.AutoScaleMode = AutoScaleMode.Font;
             this.BackColor = Color.FromArgb(245, 245, 245);
             this.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             this.StartPosition = FormStartPosition.CenterScreen;
 
-            this.ResumeLayout(false);
-        }
-
-        private void ConfigureForm()
-        {
             // Configuración para hardware limitado
             this.SetStyle(ControlStyles.OptimizedDoubleBuffer, true);
             this.SetStyle(ControlStyles.AllPaintingInWmPaint, true);

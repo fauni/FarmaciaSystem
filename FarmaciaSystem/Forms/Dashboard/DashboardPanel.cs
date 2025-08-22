@@ -28,57 +28,63 @@ namespace FarmaciaSystem.Forms.Dashboard
         private ListBox lstAlerts;
         private Timer refreshTimer;
 
-        private readonly ProductService _productService;
-        private readonly InventoryService _inventoryService;
-        private readonly AlertService _alertService;
+        private ProductService _productService;
+        private InventoryService _inventoryService;
+        private AlertService _alertService;
+
+        private bool _isLoaded = false;
 
         public DashboardPanel()
         {
             InitializeComponent();
             InitializeServices();
-            LoadDashboardData();
+            ConfigureDashboard();
             StartRefreshTimer();
         }
 
-        private void InitializeComponent()
+        protected override async void OnLoad(EventArgs e)
         {
-            this.pnlHeader = new Panel();
-            this.lblWelcome = new Label();
-            this.lblDateTime = new Label();
-            this.pnlCards = new Panel();
-            this.cardTotalProducts = new Panel();
-            this.cardLowStock = new Panel();
-            this.cardExpiring = new Panel();
-            this.cardRecentMovements = new Panel();
-            this.pnlAlerts = new Panel();
-            this.lblAlertsTitle = new Label();
-            this.lstAlerts = new ListBox();
-            this.refreshTimer = new Timer();
+            base.OnLoad(e);
 
-            this.pnlHeader.SuspendLayout();
-            this.pnlCards.SuspendLayout();
-            this.pnlAlerts.SuspendLayout();
-            this.SuspendLayout();
+            if (!_isLoaded)
+            {
+                _isLoaded = true;
+                await LoadDashboardDataAsync();
+            }
+        }
 
-            // 
-            // DashboardPanel
-            // 
+        private async void DashboardPanel_Load(object sender, EventArgs e)
+        {
+            if (!_isLoaded)
+            {
+                _isLoaded = true;
+                await LoadDashboardDataAsync();
+            }
+        }
+
+        private void ConfigureDashboard()
+        {
             this.Size = new Size(1000, 600);
             this.BackColor = Color.FromArgb(245, 245, 245);
             this.Padding = new Padding(20);
 
+            CreateDashboardInterface();
+        }
+
+        private void CreateDashboardInterface()
+        {
             // 
             // pnlHeader
             // 
+            this.pnlHeader = new Panel();
             this.pnlHeader.Dock = DockStyle.Top;
             this.pnlHeader.Height = 80;
             this.pnlHeader.BackColor = Color.White;
-            this.pnlHeader.Controls.Add(this.lblWelcome);
-            this.pnlHeader.Controls.Add(this.lblDateTime);
 
             // 
             // lblWelcome
             // 
+            this.lblWelcome = new Label();
             this.lblWelcome.Text = $"¡Bienvenido, {SessionManager.CurrentUser?.FullName ?? "Usuario"}!";
             this.lblWelcome.Font = new Font("Segoe UI", 18F, FontStyle.Bold);
             this.lblWelcome.ForeColor = Color.FromArgb(52, 73, 94);
@@ -88,40 +94,52 @@ namespace FarmaciaSystem.Forms.Dashboard
             // 
             // lblDateTime
             // 
-            this.lblDateTime.Text = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy");
+            this.lblDateTime = new Label();
+            this.lblDateTime.Text = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy", new System.Globalization.CultureInfo("es-ES"));
             this.lblDateTime.Font = new Font("Segoe UI", 11F);
             this.lblDateTime.ForeColor = Color.FromArgb(127, 140, 141);
             this.lblDateTime.Location = new Point(20, 50);
             this.lblDateTime.AutoSize = true;
 
+            this.pnlHeader.Controls.Add(this.lblWelcome);
+            this.pnlHeader.Controls.Add(this.lblDateTime);
+
             // 
             // pnlCards
             // 
+            this.pnlCards = new Panel();
             this.pnlCards.Dock = DockStyle.Top;
             this.pnlCards.Height = 200;
-            this.pnlCards.Controls.Add(this.cardTotalProducts);
-            this.pnlCards.Controls.Add(this.cardLowStock);
-            this.pnlCards.Controls.Add(this.cardExpiring);
-            this.pnlCards.Controls.Add(this.cardRecentMovements);
+
+            // Inicializar tarjetas
+            this.cardTotalProducts = new Panel();
+            this.cardLowStock = new Panel();
+            this.cardExpiring = new Panel();
+            this.cardRecentMovements = new Panel();
 
             // 
-            // Tarjetas del dashboard
+            // Crear tarjetas del dashboard
             // 
             CreateDashboardCard(this.cardTotalProducts, "Total Productos", "0", Color.FromArgb(52, 152, 219), 0);
             CreateDashboardCard(this.cardLowStock, "Stock Bajo", "0", Color.FromArgb(231, 76, 60), 1);
             CreateDashboardCard(this.cardExpiring, "Por Vencer", "0", Color.FromArgb(243, 156, 18), 2);
             CreateDashboardCard(this.cardRecentMovements, "Movimientos Hoy", "0", Color.FromArgb(46, 204, 113), 3);
 
+            this.pnlCards.Controls.Add(this.cardTotalProducts);
+            this.pnlCards.Controls.Add(this.cardLowStock);
+            this.pnlCards.Controls.Add(this.cardExpiring);
+            this.pnlCards.Controls.Add(this.cardRecentMovements);
+
             // 
             // pnlAlerts
             // 
+            this.pnlAlerts = new Panel();
             this.pnlAlerts.Dock = DockStyle.Fill;
-            this.pnlAlerts.Controls.Add(this.lstAlerts);
-            this.pnlAlerts.Controls.Add(this.lblAlertsTitle);
 
             // 
             // lblAlertsTitle
             // 
+            this.lblAlertsTitle = new Label();
             this.lblAlertsTitle.Text = "Alertas del Sistema";
             this.lblAlertsTitle.Font = new Font("Segoe UI", 14F, FontStyle.Bold);
             this.lblAlertsTitle.ForeColor = Color.FromArgb(52, 73, 94);
@@ -132,6 +150,7 @@ namespace FarmaciaSystem.Forms.Dashboard
             // 
             // lstAlerts
             // 
+            this.lstAlerts = new ListBox();
             this.lstAlerts.Dock = DockStyle.Fill;
             this.lstAlerts.Font = new Font("Segoe UI", 10F);
             this.lstAlerts.BackColor = Color.White;
@@ -140,22 +159,20 @@ namespace FarmaciaSystem.Forms.Dashboard
             this.lstAlerts.ItemHeight = 40;
             this.lstAlerts.DrawItem += LstAlerts_DrawItem;
 
+            this.pnlAlerts.Controls.Add(this.lstAlerts);
+            this.pnlAlerts.Controls.Add(this.lblAlertsTitle);
+
             // 
             // refreshTimer
             // 
+            this.refreshTimer = new Timer();
             this.refreshTimer.Interval = 300000; // 5 minutos
             this.refreshTimer.Tick += RefreshTimer_Tick;
-            this.refreshTimer.Enabled = true;
 
+            // Agregar controles principales
             this.Controls.Add(this.pnlAlerts);
             this.Controls.Add(this.pnlCards);
             this.Controls.Add(this.pnlHeader);
-
-            this.pnlHeader.ResumeLayout(false);
-            this.pnlHeader.PerformLayout();
-            this.pnlCards.ResumeLayout(false);
-            this.pnlAlerts.ResumeLayout(false);
-            this.ResumeLayout(false);
         }
 
         private void CreateDashboardCard(Panel card, string title, string value, Color color, int position)
@@ -213,14 +230,19 @@ namespace FarmaciaSystem.Forms.Dashboard
 
         private string GetCardDescription(int cardIndex)
         {
-            return cardIndex switch
+            switch (cardIndex)
             {
-                0 => "Productos registrados en el sistema",
-                1 => "Productos con stock por debajo del mínimo",
-                2 => "Productos que vencen en 30 días",
-                3 => "Movimientos de inventario de hoy",
-                _ => ""
-            };
+                case 0:
+                    return "Productos registrados en el sistema";
+                case 1:
+                    return "Productos con stock por debajo del mínimo";
+                case 2:
+                    return "Productos que vencen en 30 días";
+                case 3:
+                    return "Movimientos de inventario de hoy";
+                default:
+                    return "";
+            }
         }
 
         private void InitializeServices()
@@ -236,7 +258,9 @@ namespace FarmaciaSystem.Forms.Dashboard
             _alertService = new AlertService(productRepository, inventoryRepository);
         }
 
-        private async void LoadDashboardData()
+        private async 
+        Task
+LoadDashboardDataAsync()
         {
             try
             {
@@ -252,28 +276,39 @@ namespace FarmaciaSystem.Forms.Dashboard
 
         private async Task LoadCardDataAsync()
         {
-            // Total de productos
-            var totalProducts = await _productService.GetProductCountAsync();
-            UpdateCardValue(0, totalProducts.ToString());
+            try
+            {
+                // Total de productos
+                var totalProducts = await _productService.GetProductCountAsync();
+                UpdateCardValue(0, totalProducts.ToString());
 
-            // Productos con stock bajo
-            var lowStockProducts = await _productService.GetLowStockProductsAsync();
-            var lowStockCount = lowStockProducts.Count();
-            UpdateCardValue(1, lowStockCount.ToString());
+                // Productos con stock bajo
+                var lowStockProducts = await _productService.GetLowStockProductsAsync();
+                var lowStockCount = lowStockProducts.Count();
+                UpdateCardValue(1, lowStockCount.ToString());
 
-            // Productos próximos a vencer
-            var expiringBatches = await _inventoryService.GetExpiringBatchesAsync(30);
-            var expiringCount = expiringBatches.Count();
-            UpdateCardValue(2, expiringCount.ToString());
+                // Productos próximos a vencer
+                var expiringBatches = await _inventoryService.GetExpiringBatchesAsync(30);
+                var expiringCount = expiringBatches.Count();
+                UpdateCardValue(2, expiringCount.ToString());
 
-            // Movimientos de hoy (simulado por ahora)
-            var todayMovements = await _inventoryService.GetMovementHistoryAsync(DateTime.Today, DateTime.Today.AddDays(1));
-            var movementsCount = todayMovements.Count();
-            UpdateCardValue(3, movementsCount.ToString());
+                // Movimientos de hoy
+                var todayMovements = await _inventoryService.GetMovementHistoryAsync(DateTime.Today, DateTime.Today.AddDays(1));
+                var movementsCount = todayMovements.Count();
+                UpdateCardValue(3, movementsCount.ToString());
 
-            // Actualizar descripciones con más detalle
-            UpdateCardDescription(1, lowStockCount > 0 ? "¡Requiere atención inmediata!" : "Stock en niveles normales");
-            UpdateCardDescription(2, expiringCount > 0 ? "¡Verificar fechas de vencimiento!" : "Sin productos próximos a vencer");
+                // Actualizar descripciones con más detalle
+                UpdateCardDescription(1, lowStockCount > 0 ? "¡Requiere atención inmediata!" : "Stock en niveles normales");
+                UpdateCardDescription(2, expiringCount > 0 ? "¡Verificar fechas de vencimiento!" : "Sin productos próximos a vencer");
+            }
+            catch (Exception ex)
+            {
+                // En caso de error, mostrar valores por defecto
+                UpdateCardValue(0, "Error");
+                UpdateCardValue(1, "Error");
+                UpdateCardValue(2, "Error");
+                UpdateCardValue(3, "Error");
+            }
         }
 
         private async Task LoadAlertsAsync()
@@ -282,43 +317,114 @@ namespace FarmaciaSystem.Forms.Dashboard
             {
                 var alerts = await _alertService.GenerateAlertsAsync();
 
-                lstAlerts.Items.Clear();
+                if (lstAlerts.InvokeRequired)
+                {
+                    lstAlerts.Invoke(new Action(() => {
+                        lstAlerts.Items.Clear();
+                    }));
+                }
+                else
+                {
+                    lstAlerts.Items.Clear();
+                }
 
                 if (!alerts.Any())
                 {
-                    lstAlerts.Items.Add("No hay alertas pendientes");
+                    if (lstAlerts.InvokeRequired)
+                    {
+                        lstAlerts.Invoke(new Action(() => {
+                            lstAlerts.Items.Add("No hay alertas pendientes");
+                        }));
+                    }
+                    else
+                    {
+                        lstAlerts.Items.Add("No hay alertas pendientes");
+                    }
                     return;
                 }
 
                 foreach (var alert in alerts.Take(10)) // Mostrar máximo 10 alertas
                 {
-                    lstAlerts.Items.Add(alert);
+                    if (lstAlerts.InvokeRequired)
+                    {
+                        lstAlerts.Invoke(new Action(() => {
+                            lstAlerts.Items.Add(alert);
+                        }));
+                    }
+                    else
+                    {
+                        lstAlerts.Items.Add(alert);
+                    }
                 }
             }
             catch (Exception ex)
             {
-                lstAlerts.Items.Clear();
-                lstAlerts.Items.Add($"Error al cargar alertas: {ex.Message}");
+                if (lstAlerts.InvokeRequired)
+                {
+                    lstAlerts.Invoke(new Action(() => {
+                        lstAlerts.Items.Clear();
+                        lstAlerts.Items.Add($"Error al cargar alertas: {ex.Message}");
+                    }));
+                }
+                else
+                {
+                    lstAlerts.Items.Clear();
+                    lstAlerts.Items.Add($"Error al cargar alertas: {ex.Message}");
+                }
             }
         }
 
         private void UpdateCardValue(int cardIndex, string value)
         {
-            var card = pnlCards.Controls[cardIndex];
-            var lblValue = card.Controls.Find($"lblValue{cardIndex}", false).FirstOrDefault() as Label;
-            if (lblValue != null)
+            try
             {
-                lblValue.Text = value;
+                if (cardIndex >= 0 && cardIndex < pnlCards.Controls.Count)
+                {
+                    var card = pnlCards.Controls[cardIndex];
+                    var lblValue = card.Controls.Find($"lblValue{cardIndex}", false).FirstOrDefault() as Label;
+                    if (lblValue != null)
+                    {
+                        if (lblValue.InvokeRequired)
+                        {
+                            lblValue.Invoke(new Action(() => lblValue.Text = value));
+                        }
+                        else
+                        {
+                            lblValue.Text = value;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignorar errores de actualización de UI
             }
         }
 
         private void UpdateCardDescription(int cardIndex, string description)
         {
-            var card = pnlCards.Controls[cardIndex];
-            var lblDesc = card.Controls.Find($"lblDesc{cardIndex}", false).FirstOrDefault() as Label;
-            if (lblDesc != null)
+            try
             {
-                lblDesc.Text = description;
+                if (cardIndex >= 0 && cardIndex < pnlCards.Controls.Count)
+                {
+                    var card = pnlCards.Controls[cardIndex];
+                    var lblDesc = card.Controls.Find($"lblDesc{cardIndex}", false).FirstOrDefault() as Label;
+                    if (lblDesc != null)
+                    {
+                        if (lblDesc.InvokeRequired)
+                        {
+                            lblDesc.Invoke(new Action(() => lblDesc.Text = description));
+                        }
+                        else
+                        {
+                            lblDesc.Text = description;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                // Ignorar errores de actualización de UI
             }
         }
 
@@ -337,13 +443,21 @@ namespace FarmaciaSystem.Forms.Dashboard
 
             if (alertObj != null)
             {
-                priorityColor = alertObj.Priority switch
+                switch (alertObj.Priority)
                 {
-                    Models.AlertPriority.Critical => Color.FromArgb(231, 76, 60),
-                    Models.AlertPriority.High => Color.FromArgb(243, 156, 18),
-                    Models.AlertPriority.Medium => Color.FromArgb(52, 152, 219),
-                    _ => Color.FromArgb(46, 204, 113)
-                };
+                    case Models.AlertPriority.Critical:
+                        priorityColor = Color.FromArgb(231, 76, 60);
+                        break;
+                    case Models.AlertPriority.High:
+                        priorityColor = Color.FromArgb(243, 156, 18);
+                        break;
+                    case Models.AlertPriority.Medium:
+                        priorityColor = Color.FromArgb(52, 152, 219);
+                        break;
+                    default:
+                        priorityColor = Color.FromArgb(46, 204, 113);
+                        break;
+                }
 
                 if (e.State.HasFlag(DrawItemState.Selected))
                 {
@@ -378,12 +492,37 @@ namespace FarmaciaSystem.Forms.Dashboard
 
         private async void RefreshTimer_Tick(object sender, EventArgs e)
         {
-            await LoadDashboardData();
+            await LoadDashboardDataAsync();
         }
 
-        public async void RefreshDashboard()
+        private void StartRefreshTimer()
         {
-            await LoadDashboardData();
+            if (refreshTimer != null)
+            {
+                refreshTimer.Enabled = true;
+                refreshTimer.Start();
+            }
+        }
+
+        public async Task RefreshDashboardAsync()
+        {
+            await LoadDashboardDataAsync();
+        }
+
+        // Método síncrono para compatibilidad hacia atrás
+        public void RefreshDashboard()
+        {
+            _ = RefreshDashboardAsync(); // Fire and forget
+        }
+
+        private void StopRefreshTimer()
+        {
+            if (refreshTimer != null)
+            {
+                refreshTimer.Stop();
+                refreshTimer.Dispose();
+                refreshTimer = null;
+            }
         }
     }
 }

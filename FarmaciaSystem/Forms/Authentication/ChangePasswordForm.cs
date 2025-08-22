@@ -28,45 +28,40 @@ namespace FarmaciaSystem.Forms.Authentication
         private Button btnCancel;
         private Label lblPasswordStrength;
 
-        private readonly AuthenticationService _authService;
+        private AuthenticationService _authService;
 
         public ChangePasswordForm()
         {
             InitializeComponent();
             InitializeServices();
-            ConfigureForm();
+            ConfigureChangePasswordForm();
         }
 
-        private void InitializeComponent()
+        private void InitializeServices()
         {
-            this.pnlMain = new Panel();
-            this.lblTitle = new Label();
-            this.lblCurrentPassword = new Label();
-            this.txtCurrentPassword = new TextBox();
-            this.lblNewPassword = new Label();
-            this.txtNewPassword = new TextBox();
-            this.lblConfirmPassword = new Label();
-            this.txtConfirmPassword = new TextBox();
-            this.btnSave = new Button();
-            this.btnCancel = new Button();
-            this.lblPasswordStrength = new Label();
+            var userRepository = new UserRepository();
+            _authService = new AuthenticationService(userRepository);
+        }
 
-            this.pnlMain.SuspendLayout();
-            this.SuspendLayout();
-
-            // 
-            // ChangePasswordForm
-            // 
-            this.ClientSize = new Size(400, 350);
+        private void ConfigureChangePasswordForm()
+        {
+            this.Text = "Cambiar Contraseña";
+            this.Size = new Size(400, 350);
             this.FormBorderStyle = FormBorderStyle.FixedDialog;
             this.MaximizeBox = false;
             this.MinimizeBox = false;
-            this.Text = "Cambiar Contraseña";
             this.StartPosition = FormStartPosition.CenterParent;
 
+            CreateChangePasswordInterface();
+            this.ActiveControl = txtCurrentPassword;
+        }
+
+        private void CreateChangePasswordInterface()
+        {
             // 
             // pnlMain
             // 
+            this.pnlMain = new Panel();
             this.pnlMain.Dock = DockStyle.Fill;
             this.pnlMain.Padding = new Padding(30);
             this.pnlMain.BackColor = Color.White;
@@ -74,6 +69,7 @@ namespace FarmaciaSystem.Forms.Authentication
             // 
             // lblTitle
             // 
+            this.lblTitle = new Label();
             this.lblTitle.Text = "Cambiar Contraseña";
             this.lblTitle.Font = new Font("Segoe UI", 16F, FontStyle.Bold);
             this.lblTitle.ForeColor = Color.FromArgb(52, 73, 94);
@@ -84,6 +80,7 @@ namespace FarmaciaSystem.Forms.Authentication
             // 
             // lblCurrentPassword
             // 
+            this.lblCurrentPassword = new Label();
             this.lblCurrentPassword.Text = "Contraseña Actual:";
             this.lblCurrentPassword.Font = new Font("Segoe UI", 10F);
             this.lblCurrentPassword.Location = new Point(30, 80);
@@ -92,6 +89,7 @@ namespace FarmaciaSystem.Forms.Authentication
             // 
             // txtCurrentPassword
             // 
+            this.txtCurrentPassword = new TextBox();
             this.txtCurrentPassword.Font = new Font("Segoe UI", 10F);
             this.txtCurrentPassword.Location = new Point(30, 105);
             this.txtCurrentPassword.Size = new Size(340, 25);
@@ -100,6 +98,7 @@ namespace FarmaciaSystem.Forms.Authentication
             // 
             // lblNewPassword
             // 
+            this.lblNewPassword = new Label();
             this.lblNewPassword.Text = "Nueva Contraseña:";
             this.lblNewPassword.Font = new Font("Segoe UI", 10F);
             this.lblNewPassword.Location = new Point(30, 145);
@@ -108,6 +107,7 @@ namespace FarmaciaSystem.Forms.Authentication
             // 
             // txtNewPassword
             // 
+            this.txtNewPassword = new TextBox();
             this.txtNewPassword.Font = new Font("Segoe UI", 10F);
             this.txtNewPassword.Location = new Point(30, 170);
             this.txtNewPassword.Size = new Size(340, 25);
@@ -115,8 +115,18 @@ namespace FarmaciaSystem.Forms.Authentication
             this.txtNewPassword.TextChanged += TxtNewPassword_TextChanged;
 
             // 
+            // lblPasswordStrength
+            // 
+            this.lblPasswordStrength = new Label();
+            this.lblPasswordStrength.Font = new Font("Segoe UI", 8F);
+            this.lblPasswordStrength.Location = new Point(30, 195);
+            this.lblPasswordStrength.Size = new Size(340, 15);
+            this.lblPasswordStrength.ForeColor = Color.Gray;
+
+            // 
             // lblConfirmPassword
             // 
+            this.lblConfirmPassword = new Label();
             this.lblConfirmPassword.Text = "Confirmar Contraseña:";
             this.lblConfirmPassword.Font = new Font("Segoe UI", 10F);
             this.lblConfirmPassword.Location = new Point(30, 210);
@@ -125,22 +135,16 @@ namespace FarmaciaSystem.Forms.Authentication
             // 
             // txtConfirmPassword
             // 
+            this.txtConfirmPassword = new TextBox();
             this.txtConfirmPassword.Font = new Font("Segoe UI", 10F);
             this.txtConfirmPassword.Location = new Point(30, 235);
             this.txtConfirmPassword.Size = new Size(340, 25);
             this.txtConfirmPassword.UseSystemPasswordChar = true;
 
             // 
-            // lblPasswordStrength
-            // 
-            this.lblPasswordStrength.Font = new Font("Segoe UI", 8F);
-            this.lblPasswordStrength.Location = new Point(30, 195);
-            this.lblPasswordStrength.Size = new Size(340, 15);
-            this.lblPasswordStrength.ForeColor = Color.Gray;
-
-            // 
             // btnSave
             // 
+            this.btnSave = new Button();
             this.btnSave.Text = "Cambiar";
             this.btnSave.Font = new Font("Segoe UI", 10F, FontStyle.Bold);
             this.btnSave.Size = new Size(100, 35);
@@ -154,6 +158,7 @@ namespace FarmaciaSystem.Forms.Authentication
             // 
             // btnCancel
             // 
+            this.btnCancel = new Button();
             this.btnCancel.Text = "Cancelar";
             this.btnCancel.Font = new Font("Segoe UI", 10F);
             this.btnCancel.Size = new Size(100, 35);
@@ -164,6 +169,7 @@ namespace FarmaciaSystem.Forms.Authentication
             this.btnCancel.FlatAppearance.BorderSize = 0;
             this.btnCancel.Click += BtnCancel_Click;
 
+            // Agregar controles al panel principal
             this.pnlMain.Controls.Add(this.lblTitle);
             this.pnlMain.Controls.Add(this.lblCurrentPassword);
             this.pnlMain.Controls.Add(this.txtCurrentPassword);
@@ -175,21 +181,8 @@ namespace FarmaciaSystem.Forms.Authentication
             this.pnlMain.Controls.Add(this.btnSave);
             this.pnlMain.Controls.Add(this.btnCancel);
 
+            // Agregar panel principal al formulario
             this.Controls.Add(this.pnlMain);
-            this.pnlMain.ResumeLayout(false);
-            this.pnlMain.PerformLayout();
-            this.ResumeLayout(false);
-        }
-
-        private void InitializeServices()
-        {
-            var userRepository = new UserRepository();
-            _authService = new AuthenticationService(userRepository);
-        }
-
-        private void ConfigureForm()
-        {
-            this.ActiveControl = txtCurrentPassword;
         }
 
         private void TxtNewPassword_TextChanged(object sender, EventArgs e)
