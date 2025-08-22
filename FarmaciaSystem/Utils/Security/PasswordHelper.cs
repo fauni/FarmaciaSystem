@@ -17,7 +17,10 @@ namespace FarmaciaSystem.Utils.Security
             using (var sha256 = SHA256.Create())
             {
                 var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
-                return Convert.ToHexString(hashedBytes).ToLower();
+                var sb = new StringBuilder(hashedBytes.Length * 2);
+                foreach (var b in hashedBytes)
+                    sb.Append(b.ToString("x2"));
+                return sb.ToString();
             }
         }
 
@@ -93,14 +96,21 @@ namespace FarmaciaSystem.Utils.Security
             if (password.Any(char.IsDigit)) score++;
             if (password.Any(c => "!@#$%^&*()_+-=[]{}|;:,.<>?".Contains(c))) score++;
 
-            return score switch
+            switch (score)
             {
-                0 or 1 => PasswordStrength.VeryWeak,
-                2 or 3 => PasswordStrength.Weak,
-                4 => PasswordStrength.Medium,
-                5 => PasswordStrength.Strong,
-                _ => PasswordStrength.VeryStrong
-            };
+                case 0:
+                case 1:
+                    return PasswordStrength.VeryWeak;
+                case 2:
+                case 3:
+                    return PasswordStrength.Weak;
+                case 4:
+                    return PasswordStrength.Medium;
+                case 5:
+                    return PasswordStrength.Strong;
+                default:
+                    return PasswordStrength.VeryStrong;
+            }
         }
 
         private static string ShuffleString(string input)

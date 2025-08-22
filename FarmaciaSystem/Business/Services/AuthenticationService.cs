@@ -1,5 +1,6 @@
 ﻿using FarmaciaSystem.Data.Repositories;
 using FarmaciaSystem.Models;
+using FarmaciaSystem.Utils.Security;
 using System;
 using System.Collections.Generic;
 using System.Linq;
