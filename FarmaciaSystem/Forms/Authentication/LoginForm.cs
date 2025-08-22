@@ -4,12 +4,7 @@ using FarmaciaSystem.Forms.Base;
 using FarmaciaSystem.Forms.Main;
 using FarmaciaSystem.Utils.Security;
 using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -68,7 +63,15 @@ namespace FarmaciaSystem.Forms.Authentication
                 BackColor = Color.FromArgb(52, 73, 94)
             };
 
-            // Panel de login
+            // Panel de login - PRIMERO definir el tamaño antes de la ubicación
+            pnlLogin = new Panel
+            {
+                Size = new Size(350, 280),
+                BackColor = Color.White,
+                BorderStyle = BorderStyle.FixedSingle
+            };
+
+            // AHORA sí podemos centrar el panel usando sus dimensiones
             pnlLogin.Location = new Point((this.Width - pnlLogin.Width) / 2, (this.Height - pnlLogin.Height) / 2);
 
             // Logo/Ícono
@@ -131,41 +134,40 @@ namespace FarmaciaSystem.Forms.Authentication
             // Botones
             btnLogin = new Button
             {
-                Text = "INGRESAR",
+                Text = "Iniciar Sesión",
                 Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                ForeColor = Color.White,
+                BackColor = Color.FromArgb(46, 204, 113),
+                FlatStyle = FlatStyle.Flat,
                 Size = new Size(140, 35),
                 Location = new Point(25, 260),
-                BackColor = Color.FromArgb(46, 204, 113),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand
             };
             btnLogin.FlatAppearance.BorderSize = 0;
 
             btnExit = new Button
             {
-                Text = "SALIR",
+                Text = "Salir",
                 Font = new Font("Segoe UI", 10F),
+                ForeColor = Color.FromArgb(52, 73, 94),
+                BackColor = Color.FromArgb(236, 240, 241),
+                FlatStyle = FlatStyle.Flat,
                 Size = new Size(140, 35),
                 Location = new Point(185, 260),
-                BackColor = Color.FromArgb(149, 165, 166),
-                ForeColor = Color.White,
-                FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand
             };
             btnExit.FlatAppearance.BorderSize = 0;
 
-            // Progress bar (oculto inicialmente)
+            // Progress Bar (inicialmente oculta)
             progressBar = new ProgressBar
             {
                 Style = ProgressBarStyle.Marquee,
-                MarqueeAnimationSpeed = 30,
-                Location = new Point(25, 265),
-                Size = new Size(300, 25),
+                Location = new Point(25, 305),
+                Size = new Size(300, 8),
                 Visible = false
             };
 
-            // Versión
+            // Label de versión
             lblVersion = new Label
             {
                 Text = "Versión 1.0.0",
@@ -176,7 +178,7 @@ namespace FarmaciaSystem.Forms.Authentication
                 TextAlign = ContentAlignment.MiddleLeft
             };
 
-            // Agregar controles
+            // Agregar controles al panel de login
             pnlLogin.Controls.Add(picLogo);
             pnlLogin.Controls.Add(lblTitle);
             pnlLogin.Controls.Add(lblUsername);
@@ -187,19 +189,39 @@ namespace FarmaciaSystem.Forms.Authentication
             pnlLogin.Controls.Add(btnExit);
             pnlLogin.Controls.Add(progressBar);
 
+            // Agregar controles al panel principal
             pnlMain.Controls.Add(pnlLogin);
             pnlMain.Controls.Add(lblVersion);
 
+            // Agregar panel principal al formulario
             this.Controls.Add(pnlMain);
 
-            // Eventos
+            // Configurar eventos
             btnLogin.Click += BtnLogin_Click;
             btnExit.Click += BtnExit_Click;
             txtPassword.KeyPress += TxtPassword_KeyPress;
             txtUsername.KeyPress += TxtUsername_KeyPress;
+            this.Load += LoginForm_Load;
 
             // Focus inicial
             this.ActiveControl = txtUsername;
+        }
+
+        private void LoginForm_Load(object sender, EventArgs e)
+        {
+            // Recentrar el panel cuando el formulario se cargue completamente
+            CenterLoginPanel();
+        }
+
+        private void CenterLoginPanel()
+        {
+            if (pnlLogin != null)
+            {
+                pnlLogin.Location = new Point(
+                    (this.ClientSize.Width - pnlLogin.Width) / 2,
+                    (this.ClientSize.Height - pnlLogin.Height) / 2
+                );
+            }
         }
 
         private void SetDefaultCredentials()
@@ -232,6 +254,11 @@ namespace FarmaciaSystem.Forms.Authentication
             if (!ValidateInput()) return;
 
             await PerformLoginAsync();
+        }
+
+        private void BtnExit_Click(object sender, EventArgs e)
+        {
+            Application.Exit();
         }
 
         private bool ValidateInput()
@@ -307,34 +334,14 @@ namespace FarmaciaSystem.Forms.Authentication
             txtUsername.Enabled = enabled;
             txtPassword.Enabled = enabled;
             btnLogin.Enabled = enabled;
-            btnLogin.Text = enabled ? "INGRESAR" : "INGRESANDO...";
+            btnLogin.Text = enabled ? "Iniciar Sesión" : "Iniciando...";
         }
 
         private void ShowProgress(bool show)
         {
             progressBar.Visible = show;
-            btnLogin.Visible = !show;
-            btnExit.Visible = !show;
         }
 
-        private void BtnExit_Click(object sender, EventArgs e)
-        {
-            if (ShowConfirmation("¿Está seguro que desea salir de la aplicación?", "Confirmar Salida"))
-            {
-                Application.Exit();
-            }
-        }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            if (e.CloseReason == CloseReason.UserClosing)
-            {
-                if (!ShowConfirmation("¿Está seguro que desea salir de la aplicación?", "Confirmar Salida"))
-                {
-                    e.Cancel = true;
-                }
-            }
-            base.OnFormClosing(e);
-        }
     }
 }

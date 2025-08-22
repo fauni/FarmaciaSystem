@@ -155,7 +155,7 @@ namespace FarmaciaSystem.Forms.Inventory
             {
                 Text = "Cancelar",
                 Font = new Font("Segoe UI", 10F),
-                Size = new Size(120, 36),
+                Size = new Size(100, 36),
                 BackColor = Color.FromArgb(149, 165, 166),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
@@ -168,24 +168,21 @@ namespace FarmaciaSystem.Forms.Inventory
 
             pnlButtons.Controls.AddRange(new Control[] { btnSave, btnCancel });
 
-            // Agregar paneles al formulario
-            this.Controls.Add(pnlMain);
-            this.Controls.Add(pnlButtons);
-            this.Controls.Add(pnlHeader);
+            this.Controls.AddRange(new Control[] { pnlMain, pnlButtons, pnlHeader });
         }
 
         private void CreateFormControls()
         {
-            int yPosition = 10;
             const int labelHeight = 20;
             const int controlHeight = 25;
-            const int spacing = 40;
+            const int spacing = 50;
+            int yPosition = 20;
 
             // Producto
             lblProduct = new Label
             {
                 Text = "Producto: *",
-                Font = new Font("Segoe UI", 10F, FontStyle.Bold),
+                Font = new Font("Segoe UI", 10F),
                 Location = new Point(0, yPosition),
                 Size = new Size(100, labelHeight)
             };
@@ -194,7 +191,7 @@ namespace FarmaciaSystem.Forms.Inventory
             {
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(0, yPosition + 20),
-                Size = new Size(600, controlHeight),
+                Size = new Size(400, controlHeight),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
@@ -203,14 +200,13 @@ namespace FarmaciaSystem.Forms.Inventory
                 Text = "Buscar",
                 Font = new Font("Segoe UI", 9F),
                 Size = new Size(80, controlHeight),
-                Location = new Point(610, yPosition + 20),
+                Location = new Point(410, yPosition + 20),
                 BackColor = Color.FromArgb(52, 152, 219),
                 ForeColor = Color.White,
                 FlatStyle = FlatStyle.Flat,
                 Cursor = Cursors.Hand
             };
             btnSearchProduct.FlatAppearance.BorderSize = 0;
-            btnSearchProduct.Click += BtnSearchProduct_Click;
 
             yPosition += spacing;
 
@@ -227,7 +223,7 @@ namespace FarmaciaSystem.Forms.Inventory
             {
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(0, yPosition + 20),
-                Size = new Size(690, controlHeight),
+                Size = new Size(300, controlHeight),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
@@ -309,25 +305,22 @@ namespace FarmaciaSystem.Forms.Inventory
             {
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(0, yPosition + 20),
-                Size = new Size(690, controlHeight),
+                Size = new Size(300, controlHeight),
                 DropDownStyle = ComboBoxStyle.DropDownList
             };
 
             // Cargar motivos predefinidos
-            cmbReason.Items.AddRange(new string[]
+            cmbReason.Items.AddRange(new[]
             {
-                "-- Seleccionar motivo --",
                 "Venta",
-                "Producto vencido",
-                "Producto dañado",
+                "Vencimiento",
+                "Devolución",
                 "Transferencia",
-                "Devolución a proveedor",
-                "Muestras médicas",
                 "Uso interno",
-                "Ajuste de inventario",
-                "Otro (especificar)"
+                "Pérdida",
+                "Daño",
+                "Otro"
             });
-            cmbReason.SelectedIndex = 0;
 
             yPosition += spacing;
 
@@ -345,34 +338,29 @@ namespace FarmaciaSystem.Forms.Inventory
             {
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(0, yPosition + 20),
-                Size = new Size(690, controlHeight * 2),
-                MaxLength = 200,
-                Multiline = true,
-                Visible = false,
-                // PlaceholderText = "Especifique el motivo de la salida..."
+                Size = new Size(400, controlHeight),
+                Visible = false
             };
 
-            yPosition += 60;
+            yPosition += spacing;
 
             // Referencia
             lblReference = new Label
             {
-                Text = "Referencia:",
+                Text = "Referencia/Documento:",
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(0, yPosition),
-                Size = new Size(100, labelHeight)
+                Size = new Size(150, labelHeight)
             };
 
             txtReference = new TextBox
             {
                 Font = new Font("Segoe UI", 10F),
                 Location = new Point(0, yPosition + 20),
-                Size = new Size(690, controlHeight),
-                MaxLength = 100,
-                // PlaceholderText = "Número de venta, orden, etc..."
+                Size = new Size(400, controlHeight)
             };
 
-            // Agregar controles al panel principal
+            // Agregar todos los controles al panel principal
             pnlMain.Controls.AddRange(new Control[]
             {
                 lblProduct, cmbProduct, btnSearchProduct,
@@ -384,14 +372,17 @@ namespace FarmaciaSystem.Forms.Inventory
                 lblReference, txtReference
             });
 
-            // Eventos
+            // Configurar eventos
             cmbProduct.SelectedIndexChanged += CmbProduct_SelectedIndexChanged;
+            btnSearchProduct.Click += BtnSearchProduct_Click;
             cmbWarehouse.SelectedIndexChanged += CmbWarehouse_SelectedIndexChanged;
             cmbReason.SelectedIndexChanged += CmbReason_SelectedIndexChanged;
         }
 
         private void ConfigureStockGridColumns()
         {
+            dgvAvailableStock.Columns.Clear();
+
             dgvAvailableStock.Columns.AddRange(new DataGridViewColumn[]
             {
                 new DataGridViewTextBoxColumn
@@ -447,6 +438,7 @@ namespace FarmaciaSystem.Forms.Inventory
                     Name = "DaysToExpiry",
                     HeaderText = "Días",
                     Width = 60,
+                    ReadOnly = true,
                     DefaultCellStyle = new DataGridViewCellStyle
                     {
                         Alignment = DataGridViewContentAlignment.MiddleRight
@@ -464,6 +456,21 @@ namespace FarmaciaSystem.Forms.Inventory
 
             dgvAvailableStock.EnableHeadersVisualStyles = false;
             dgvAvailableStock.CellFormatting += DgvAvailableStock_CellFormatting;
+            dgvAvailableStock.DataBindingComplete += DgvAvailableStock_DataBindingComplete;
+        }
+
+        private void DgvAvailableStock_DataBindingComplete(object sender, DataGridViewBindingCompleteEventArgs e)
+        {
+            // Calcular y asignar valores para la columna DaysToExpiry después del data binding
+            foreach (DataGridViewRow row in dgvAvailableStock.Rows)
+            {
+                var batch = row.DataBoundItem as Batch;
+                if (batch != null)
+                {
+                    var daysToExpiry = (batch.ExpiryDate - DateTime.Now).Days;
+                    row.Cells["DaysToExpiry"].Value = daysToExpiry;
+                }
+            }
         }
 
         private void DgvAvailableStock_CellFormatting(object sender, DataGridViewCellFormattingEventArgs e)
@@ -474,13 +481,6 @@ namespace FarmaciaSystem.Forms.Inventory
             if (batch == null) return;
 
             var daysToExpiry = (batch.ExpiryDate - DateTime.Now).Days;
-
-            // Calcular días para columna DaysToExpiry
-            if (dgvAvailableStock.Columns[e.ColumnIndex].Name == "DaysToExpiry")
-            {
-                e.Value = daysToExpiry;
-                e.FormattingApplied = true;
-            }
 
             // Colorear filas según proximidad al vencimiento
             if (daysToExpiry <= 0)
@@ -530,50 +530,43 @@ namespace FarmaciaSystem.Forms.Inventory
                 var totalStock = await _inventoryService.GetTotalStockByProductAsync(product.Id);
                 if (totalStock > 0)
                 {
-                    var displayText = $"{product.Name} (Stock: {totalStock})";
-                    if (!string.IsNullOrEmpty(product.Barcode))
-                        displayText += $" - {product.Barcode}";
-
-                    cmbProduct.Items.Add(new ComboBoxItem { Text = displayText, Value = product });
+                    cmbProduct.Items.Add(new ComboBoxItem
+                    {
+                        Text = $"{product.Name} (Stock: {totalStock})",
+                        Value = product
+                    });
                 }
             }
-            cmbProduct.SelectedIndex = 0;
 
             // Cargar almacenes
-            var warehouses = await _warehouseRepository.GetActiveWarehousesAsync();
+            var warehouses = await _warehouseRepository.GetAllAsync();
             cmbWarehouse.Items.Clear();
             cmbWarehouse.Items.Add(new ComboBoxItem { Text = "-- Seleccionar Almacén --", Value = null });
-            foreach (var warehouse in warehouses)
+
+            foreach (var warehouse in warehouses.Where(w => w.IsActive))
             {
-                cmbWarehouse.Items.Add(new ComboBoxItem { Text = warehouse.Name, Value = warehouse });
+                cmbWarehouse.Items.Add(new ComboBoxItem
+                {
+                    Text = warehouse.Name,
+                    Value = warehouse
+                });
             }
-            cmbWarehouse.SelectedIndex = 0;
         }
 
         private async void CmbProduct_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (cmbProduct.SelectedItem is ComboBoxItem productItem &&
-                productItem.Value is Product product)
-            {
-                _selectedProduct = product;
-                await LoadProductStockAsync();
-            }
-            else
+            if (!(cmbProduct.SelectedItem is ComboBoxItem item) || item.Value == null)
             {
                 _selectedProduct = null;
-                HideProductInfo();
+                pnlProductInfo.Visible = false;
+                return;
             }
+
+            _selectedProduct = item.Value as Product;
+            await LoadProductBatchesAsync();
         }
 
-        private async void CmbWarehouse_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (_selectedProduct != null)
-            {
-                await LoadProductStockAsync();
-            }
-        }
-
-        private async Task LoadProductStockAsync()
+        private async Task LoadProductBatchesAsync()
         {
             if (_selectedProduct == null) return;
 
@@ -581,74 +574,61 @@ namespace FarmaciaSystem.Forms.Inventory
             {
                 _availableBatches = (await _inventoryService.GetBatchesByProductAsync(_selectedProduct.Id))
                     .Where(b => b.CurrentStock > 0)
+                    .OrderBy(b => b.ExpiryDate)
                     .ToList();
 
-                // Filtrar por almacén si está seleccionado
-                if (cmbWarehouse.SelectedItem is ComboBoxItem warehouseItem &&
-                    warehouseItem.Value is Warehouse warehouse)
-                {
-                    _availableBatches = _availableBatches.Where(b => b.WarehouseId == warehouse.Id).ToList();
-                }
+                dgvAvailableStock.DataSource = _availableBatches;
 
+                lblProductInfo.Text = $"Stock disponible de: {_selectedProduct.Name}";
+                pnlProductInfo.Visible = true;
+
+                // Configurar cantidad máxima basada en stock total
                 var totalStock = _availableBatches.Sum(b => b.CurrentStock);
-                lblProductInfo.Text = $"Producto: {_selectedProduct.Name} | Stock Total Disponible: {totalStock} unidades";
-
-                dgvAvailableStock.DataSource = _availableBatches.OrderBy(b => b.ExpiryDate).ToList();
-
-                // Configurar cantidad máxima
-                nudQuantity.Maximum = Math.Max(1, totalStock);
-                if (nudQuantity.Value > totalStock)
-                    nudQuantity.Value = Math.Min(1, totalStock);
-
-                pnlProductInfo.Visible = _availableBatches.Any();
-
-                if (!_availableBatches.Any())
-                {
-                    ShowMessage("El producto seleccionado no tiene stock disponible en el almacén especificado", MessageType.Warning);
-                }
+                nudQuantity.Maximum = totalStock;
+                nudQuantity.Value = 1;
             }
             catch (Exception ex)
             {
-                ShowMessage($"Error al cargar stock del producto: {ex.Message}", MessageType.Error);
-            }
-        }
-
-        private void HideProductInfo()
-        {
-            pnlProductInfo.Visible = false;
-            _availableBatches = null;
-        }
-
-        private void CmbReason_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var isCustomReason = cmbReason.SelectedIndex == cmbReason.Items.Count - 1; // "Otro (especificar)"
-            lblCustomReason.Visible = isCustomReason;
-            txtCustomReason.Visible = isCustomReason;
-
-            if (isCustomReason)
-            {
-                txtCustomReason.Focus();
+                ShowMessage($"Error al cargar información del producto: {ex.Message}", MessageType.Error);
             }
         }
 
         private void BtnSearchProduct_Click(object sender, EventArgs e)
         {
-            using (var searchDialog = new ProductSearchDialog())
+            var searchDialog = new ProductSearchDialog();
+            if (searchDialog.ShowDialog() == DialogResult.OK)
             {
-                if (searchDialog.ShowDialog() == DialogResult.OK && searchDialog.SelectedProduct != null)
+                var selectedProduct = searchDialog.SelectedProduct;
+                if (selectedProduct != null)
                 {
                     // Buscar el producto en el combo y seleccionarlo
-                    for (int i = 0; i < cmbProduct.Items.Count; i++)
+                    for (int i = 1; i < cmbProduct.Items.Count; i++)
                     {
-                        if (cmbProduct.Items[i] is ComboBoxItem item &&
-                            item.Value is Product product &&
-                            product.Id == searchDialog.SelectedProduct.Id)
+                        var item = cmbProduct.Items[i] as ComboBoxItem;
+                        if (item?.Value is Product product && product.Id == selectedProduct.Id)
                         {
                             cmbProduct.SelectedIndex = i;
                             break;
                         }
                     }
                 }
+            }
+        }
+
+        private void CmbWarehouse_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Actualizar información si es necesario
+        }
+
+        private void CmbReason_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            bool showCustomReason = cmbReason.SelectedItem?.ToString() == "Otro";
+            lblCustomReason.Visible = showCustomReason;
+            txtCustomReason.Visible = showCustomReason;
+
+            if (showCustomReason)
+            {
+                txtCustomReason.Focus();
             }
         }
 
@@ -662,10 +642,18 @@ namespace FarmaciaSystem.Forms.Inventory
                 btnSave.Enabled = false;
                 btnSave.Text = "Procesando...";
 
-                var warehouse = ((ComboBoxItem)cmbWarehouse.SelectedItem).Value as Warehouse;
+                var warehouse = (cmbWarehouse.SelectedItem as ComboBoxItem)?.Value as Warehouse;
                 var quantity = (int)nudQuantity.Value;
-                var reason = GetSelectedReason();
-                var username = CurrentUser?.Username ?? "Sistema";
+                var reason = cmbReason.SelectedItem?.ToString() == "Otro"
+                    ? txtCustomReason.Text.Trim()
+                    : cmbReason.SelectedItem?.ToString();
+
+                if (!string.IsNullOrWhiteSpace(txtReference.Text))
+                {
+                    reason += $" - Ref: {txtReference.Text.Trim()}";
+                }
+
+                var username = SessionManager.CurrentUser?.Username ?? "Sistema";
 
                 var success = await _inventoryService.ProcessExitAsync(
                     _selectedProduct.Id,
@@ -727,35 +715,28 @@ namespace FarmaciaSystem.Forms.Inventory
             }
 
             if (!(cmbWarehouse.SelectedItem is ComboBoxItem warehouseItem) ||
-                !(warehouseItem.Value is Warehouse))
+                warehouseItem.Value == null)
             {
                 ShowMessage("Debe seleccionar un almacén", MessageType.Warning);
                 cmbWarehouse.Focus();
                 return false;
             }
 
-            if (_availableBatches == null || !_availableBatches.Any())
+            if (nudQuantity.Value <= 0)
             {
-                ShowMessage("No hay stock disponible para el producto seleccionado", MessageType.Warning);
-                return false;
-            }
-
-            var availableStock = _availableBatches.Sum(b => b.CurrentStock);
-            if (nudQuantity.Value > availableStock)
-            {
-                ShowMessage($"La cantidad solicitada ({nudQuantity.Value}) excede el stock disponible ({availableStock})", MessageType.Warning);
+                ShowMessage("La cantidad debe ser mayor a cero", MessageType.Warning);
                 nudQuantity.Focus();
                 return false;
             }
 
-            if (cmbReason.SelectedIndex <= 0)
+            if (cmbReason.SelectedIndex < 0)
             {
-                ShowMessage("Debe seleccionar un motivo para la salida", MessageType.Warning);
+                ShowMessage("Debe seleccionar un motivo de salida", MessageType.Warning);
                 cmbReason.Focus();
                 return false;
             }
 
-            if (cmbReason.SelectedIndex == cmbReason.Items.Count - 1 &&
+            if (cmbReason.SelectedItem?.ToString() == "Otro" &&
                 string.IsNullOrWhiteSpace(txtCustomReason.Text))
             {
                 ShowMessage("Debe especificar el motivo personalizado", MessageType.Warning);
@@ -763,48 +744,57 @@ namespace FarmaciaSystem.Forms.Inventory
                 return false;
             }
 
-            return true;
-        }
+            // Validar que hay suficiente stock
+            var totalAvailableStock = _availableBatches?.Sum(b => b.CurrentStock) ?? 0;
+            if (nudQuantity.Value > totalAvailableStock)
+            {
+                ShowMessage($"No hay suficiente stock disponible. Stock actual: {totalAvailableStock}", MessageType.Warning);
+                nudQuantity.Focus();
+                return false;
+            }
 
-        private string GetSelectedReason()
-        {
-            if (cmbReason.SelectedIndex == cmbReason.Items.Count - 1) // "Otro (especificar)"
-            {
-                return txtCustomReason.Text.Trim();
-            }
-            else
-            {
-                var reason = cmbReason.SelectedItem.ToString();
-                if (!string.IsNullOrWhiteSpace(txtReference.Text))
-                {
-                    reason += $" - Ref: {txtReference.Text.Trim()}";
-                }
-                return reason;
-            }
+            return true;
         }
 
         private void ClearForm()
         {
             cmbProduct.SelectedIndex = 0;
             cmbWarehouse.SelectedIndex = 0;
-            nudQuantity.Value = 1;
-            cmbReason.SelectedIndex = 0;
+            cmbReason.SelectedIndex = -1;
             txtCustomReason.Clear();
             txtReference.Clear();
-            HideProductInfo();
+            nudQuantity.Value = 1;
+
             _selectedProduct = null;
             _availableBatches = null;
+            pnlProductInfo.Visible = false;
+
+            lblCustomReason.Visible = false;
+            txtCustomReason.Visible = false;
+
             cmbProduct.Focus();
         }
 
         private bool HasUnsavedData()
         {
-            return cmbProduct.SelectedIndex > 0 ||
+            return _selectedProduct != null ||
                    cmbWarehouse.SelectedIndex > 0 ||
-                   nudQuantity.Value > 1 ||
-                   cmbReason.SelectedIndex > 0 ||
+                   cmbReason.SelectedIndex >= 0 ||
                    !string.IsNullOrWhiteSpace(txtCustomReason.Text) ||
-                   !string.IsNullOrWhiteSpace(txtReference.Text);
+                   !string.IsNullOrWhiteSpace(txtReference.Text) ||
+                   nudQuantity.Value > 1;
+        }
+
+        // Clase auxiliar para ComboBox
+        public class ComboBoxItem
+        {
+            public string Text { get; set; }
+            public object Value { get; set; }
+
+            public override string ToString()
+            {
+                return Text;
+            }
         }
     }
 }
