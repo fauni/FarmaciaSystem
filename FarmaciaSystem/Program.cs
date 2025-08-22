@@ -14,7 +14,7 @@ namespace FarmaciaSystem
         /// Punto de entrada principal para la aplicación.
         /// </summary>
         [STAThread]
-        static async void Main()
+        static void Main()
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -24,8 +24,8 @@ namespace FarmaciaSystem
 
             try
             {
-                // Inicializar base de datos
-                await DatabaseInitializer.InitializeAsync();
+                // Inicializar base de datos de forma síncrona para evitar problemas
+                InitializeDatabase();
 
                 // Mostrar formulario de login
                 Application.Run(new LoginForm());
@@ -34,6 +34,21 @@ namespace FarmaciaSystem
             {
                 MessageBox.Show($"Error al inicializar la aplicación: {ex.Message}",
                                "Error Critical", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private static void InitializeDatabase()
+        {
+            try
+            {
+                // Ejecutar inicialización de la base de datos de forma síncrona
+                Task.Run(async () => await DatabaseInitializer.InitializeAsync()).Wait();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error al inicializar la base de datos: {ex.Message}",
+                               "Error de Base de Datos", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                throw;
             }
         }
     }

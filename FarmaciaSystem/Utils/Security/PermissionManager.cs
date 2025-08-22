@@ -9,7 +9,7 @@ namespace FarmaciaSystem.Utils.Security
 {
     public class PermissionManager
     {
-        private static readonly Dictionary<int, List<string>> _userPermissionsCache = new();
+        private static readonly Dictionary<int, List<string>> _userPermissionsCache = new Dictionary<int, List<string>>();
         private readonly UserRepository _userRepository;
 
         public PermissionManager(UserRepository userRepository)
