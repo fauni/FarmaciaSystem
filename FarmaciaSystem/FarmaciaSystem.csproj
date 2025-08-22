@@ -136,11 +136,53 @@
     <Compile Include="Forms\Base\BaseForm.Designer.cs">
       <DependentUpon>BaseForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Forms\Configuration\LocationManagerForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Configuration\LocationManagerForm.Designer.cs">
+      <DependentUpon>LocationManagerForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Forms\Dashboard\DashboardPanel.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Forms\Dashboard\DashboardPanel.Designer.cs">
       <DependentUpon>DashboardPanel.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Inventory\InventoryEntryForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Inventory\InventoryEntryForm.Designer.cs">
+      <DependentUpon>InventoryEntryForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Inventory\InventoryExitForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Inventory\InventoryExitForm.Designer.cs">
+      <DependentUpon>InventoryExitForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Inventory\ProductSearchDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Inventory\ProductSearchDialog.Designer.cs">
+      <DependentUpon>ProductSearchDialog.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Main\MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Main\MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Products\ProductEditForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Products\ProductEditForm.Designer.cs">
+      <DependentUpon>ProductEditForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Forms\Products\ProductListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Forms\Products\ProductListForm.Designer.cs">
+      <DependentUpon>ProductListForm.cs</DependentUpon>
     </Compile>
     <Compile Include="Models\ActiveIngredient.cs" />
     <Compile Include="Models\Alert.cs" />
@@ -160,9 +202,11 @@
     <Compile Include="Models\Warehouse.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Navigation\MenuManager.cs" />
     <Compile Include="Utils\Security\PasswordHelper.cs" />
     <Compile Include="Utils\Security\PermissionManager.cs" />
     <Compile Include="Utils\Security\SessionManager.cs" />
+    <Compile Include="Utils\UI\ToolbarManager.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>

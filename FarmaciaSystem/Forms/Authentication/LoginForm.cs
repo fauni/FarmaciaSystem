@@ -1,6 +1,7 @@
 ﻿using FarmaciaSystem.Business.Services;
 using FarmaciaSystem.Data.Repositories;
 using FarmaciaSystem.Forms.Base;
+using FarmaciaSystem.Forms.Main;
 using FarmaciaSystem.Utils.Security;
 using System;
 using System.Collections.Generic;
@@ -68,12 +69,6 @@ namespace FarmaciaSystem.Forms.Authentication
             };
 
             // Panel de login
-            pnlLogin = new Panel
-            {
-                Size = new Size(350, 300),
-                BackColor = Color.White,
-                BorderStyle = BorderStyle.FixedSingle
-            };
             pnlLogin.Location = new Point((this.Width - pnlLogin.Width) / 2, (this.Height - pnlLogin.Height) / 2);
 
             // Logo/Ícono
@@ -270,12 +265,13 @@ namespace FarmaciaSystem.Forms.Authentication
                 if (user != null)
                 {
                     SessionManager.StartSession(user);
-                    ShowMessage($"¡Bienvenido, {user.FullName}!", MessageType.Success);
 
-                    // Ocultar formulario de login y mostrar formulario principal
+                    // Ocultar formulario de login
                     this.Hide();
-                    //var mainForm = new MainForm();
-                    //mainForm.ShowDialog();
+
+                    // Mostrar formulario principal
+                    var mainForm = new MainForm();
+                    var result = mainForm.ShowDialog();
 
                     // Cuando se cierre el formulario principal, cerrar la aplicación
                     Application.Exit();
